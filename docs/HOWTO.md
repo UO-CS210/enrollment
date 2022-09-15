@@ -3,8 +3,11 @@
 The primary objective of this project is to introduce a fundamental 
 loop idiom, the _accumulator pattern_, together with some ways of 
 representing tabular data.  We will consider both _lists_ and 
-_dictionaries_ as representations of tabular data, and at combining 
-data in one collection with data in another table. 
+_dictionaries_ as representations of tabular data.  We will use 
+dictionaries (type `dict`)  in a version of the accumulator 
+pattern, to keep counts of elements in a list.  We will also 
+use a dictionary to expand abbreviated codes from a list. 
+
 
 We will take data in the form of text files in the _comma separated 
 values_ (CSV) format, which can be exported from many popular 
@@ -250,7 +253,7 @@ lookup.
 We will want to build a structure that is conceptually a table with 
 two columns, keys and values.  Major codes like "DSCI" will be the 
 "key" column, and program names like "Data Science" will be the 
-values. Conceptually it will look like this 
+values. Conceptually it will look like this:
 
 | Code | Program Name |
 |------|--------------|
@@ -337,10 +340,10 @@ the (major code, count) pairs.
 Another approach is to build a dict in which the _key_ 
 elements are major codes and the _value_ elements are counts.  We 
 would not have to sort the list of major codes, because we can 
-access the elements of the dict in any order.   
-As we 
-loop through each element of the list of majors, we can look in a 
-table of 
+access the elements of the dict in any order.  
+
+As we loop through each element of the list of majors, we can
+look in a table of 
 counts for an entry for the current major code. If there is no entry 
 for that major code, we can create one and initialize its value to 1.
 If there is already a count for that major code, we can add 1 to it. 
@@ -396,9 +399,10 @@ if __name__ == "__main__":
 ```
 
 As in prior projects, we want to choose a development order that 
-allows us to build and test one function at a time.  As most of our 
-tables, it makes sense to start with a function that reads a CSV 
-file into a table. 
+allows us to build and test one function at a time.  Most of our 
+tasks involve doing something with tables (which may be lists or 
+dictionaries), so it makes sense to start with a function that reads
+a CSV file into a table. 
 
 ### Read one column from a CSV file
 
@@ -445,10 +449,18 @@ def read_csv_column(path: str, field: str) -> list[str]:
 
 We can use the 
 [CSV module](https://docs.python.org/3/library/csv.html) for reading.
-Add `import csv` just after `import doctest` to import the CSV 
-module. As our CSV files start with a row containing column headers, 
-you can use a `DictReader` object.
-The `DictReader` class is described in the CSV module documentation.
+Just after 
+
+```import doctest``` 
+
+add
+
+```import csv``` 
+
+to import the CSV  module. As our CSV files start with a row 
+containing column headers, 
+you can use a `DictReader` object. The `DictReader` class is described
+in the CSV module documentation.
 It treats the header row of the CSV file specially, letting us use
 column headings as keys to get the fields we want from a row.  
 
@@ -480,12 +492,16 @@ elements of `column` while building up the `dict` object.  Before
 the loop, you will need to initialize the value of the variable that 
 will hold the `dict`.   You 
 can use a Python `for` loop to inspect each element of `column`.  
+
 Within the body of the loop, you must consider two cases for the 
 major code in each element: 
+
 - This is the first occurrence of that major code.  You will need to 
   set the count for that code to 1. 
+
 - There is already a count of 1 or more for that major code.  You 
   will need to increase it by 1. 
+
 Don't forget to return the `dict` _after_ the loop. 
 
 ### Start integrating
@@ -507,10 +523,11 @@ def main():
         print(count, code)
 ```
 
-We can shorten this code by combining the call on `counts_by_major.
-items()`, the `for` loop over those (key, value) pairs, and the 
-extraction of `code` and `count` from a (key, value) pair, all in 
-the for loop header: 
+This code works, but we can make it shorter.  The call on
+`counts_by_major.items()` can be combined 
+with the `for` loop over those (key, value) pairs.  The
+extraction of `code` and `count` from a (key, value) pair
+can also be combined in the same statement with the `for` loop header:
 
 ```python
     for code, count in counts_by_major.items():
@@ -520,9 +537,9 @@ the for loop header:
 Is this better or worse?  I like it better because we have not only 
 made the code a little shorter, but also eliminated a few variables 
 like `key_val_pairs`.  I find it more readable, but that is partly 
-because this is a familiar pattern for `for` loops in Python.  The 
+because I am familiar with this pattern for `for` loops in Python.  The 
 balance between making code shorter and keeping each step clear may 
-vary somewhat from programmer to programmer, and will also change 
+vary somewhat from programmer to programmer.  It will also change 
 over time as you gain experience.  Stick with what you find readable 
 and understandable. 
 
@@ -564,15 +581,15 @@ for testing.  Like `read_csv_column`, this function will initialize
 the result, then loop through each line using a `DictReader`.  We 
 won't bother checking whether there is already an entry for a given 
 major code, as replacing it with the same values won't hurt anything.
-You may want to start by copying the body of `read_csv_column` and 
-then modifying it to read two columns instead of one and to update 
-the `dict` with an assignment like 
+You may want to start by copying the body of `read_csv_column`.
+Then modify the copy to read two columns instead of one. 
+After extracting the `key` and `val` strings from a row of the CSV 
+table, update the `dict` with an assignment like this:
 
 ```python
 table[key] = val
 ```
-after extracting the `key` and `val` strings from a row of the CSV 
-table. 
+
 
 When `read_csv_dict` is working correctly, we can integrate it into 
 our main function: 
@@ -588,7 +605,7 @@ def main():
         print(count, program)
 ```
 
-Now we should get something like 
+Now we should get something like this: 
 
 ```commandline
 20 Data Science
@@ -602,15 +619,18 @@ Now we should get something like
 ### Sort by count
 
 We are almost there, but it would be nice if the list were in order 
-from most majors to fewest.  Python oftens a built-in `sorted` 
+from most majors to fewest.  Python provides a built-in `sorted` 
 function (which returns a sorted copy of a list) and a `sort` method 
-for type `list`, so it seems straightforward.  The tricky bit is 
-that we want to sort by count, from largest to smallest.  
+for type `list` (which modifies the list), so it seems 
+straightforward.  The tricky bit is 
+that we want to sort by count, from largest to smallest.  We can 
+extract a list of (major code, count) tuples by calling
+`counts_by_major.items()`, but if we sort that list we will order 
+them by major code, rather than by count.
 
-The 
-simplest ways to sort a collection using a key of our choice 
+The simplest ways to sort a collection using a key of our choice 
 involve features that we haven't explored yet.  Let's try to do it 
-with tools that are already in our toolbox.  If we try to sort a 
+with tools we already have.  If we try to sort a 
 list of lists or a list of tuples, Python's `sorted` function will 
 treat the first element in each sublist or tuple as more important 
 than subsequent items, so for example
@@ -626,7 +646,7 @@ produces
 ```
 
 We've already seen how to loop through keys and values of a `dict`.  
-Let's use one loop to creat a list of tuples that begin with counts. 
+Let's use one loop to create a list of tuples that begin with counts. 
 We can then sort that list, then loop through it again for printing. 
 
 ```python
@@ -646,7 +666,7 @@ def main():
         print(count, program)
 ```
 
-This gets us the desired output, but our `main` program is getting a 
+This produces the desired output, but our `main` program is getting a 
 bit long and harder to read.  I want you to _refactor_ it by writing a 
 separate function for extracting a list of (value, key) pairs from a 
 dict.  When you have created that function, which you will call 
@@ -659,7 +679,9 @@ def main():
     majors = read_csv_column("data/roster_selected.csv", "Major")
     counts_by_major = counts(majors)
     program_names = read_csv_dict("data/programs.csv", "Code", "Program Name")
+    # --- Next line replaces several statements
     by_count = items_v_k(counts_by_major)
+    # ---  
     by_count.sort(reverse=True)  # From largest to smallest
     for count, code in by_count:
         program = program_names[code]
@@ -685,33 +707,48 @@ R statistical programming language.
 
 We have applied some basic programming techniques in summarizing 
 structured data: 
+
 - We used the comma-separated-values (CSV) format, a data exchange 
   format 
   that can produced by spreadsheets and many other applications.  We 
   read CSV files using Python's `csv` module.  
+
 - We represented tabular data in multiple forms, including 
   dictionaries (type `dict`) and lists 
   (type `list`) of strings and of tuples (type `tuple`).
+
 - We summarized data by counting occurrences of distinct values.  
   This is a variation on the fundamental _accumulator pattern_, 
   which you will use often in many different ways.
+
 - We used a _destructuring assignment_ to extract elements from
   tuples, and used destructuring in a `for`loop to loop 
   through keys and values together (`for count, code in by_count:`). 
+
 - We sorted a list of tuples to put the output in the right order. 
 
 In addition, we continued to build skills in constructing and using 
 functions.  In particular: 
+
 -  We wrote the functions for this application in a sufficiently 
    general way that they could be used to summarize other tabular 
    data.  For example, if we chose to count enrollment by class 
    standing rather than major, only the `main` function would need 
    to change. 
+
 - We built test cases for functions that use external data by 
   providing additional small data sources just for testing. 
+
 - You were asked to come up with the header as well as the body for 
   `items_v_k`, to build skill in creating clear function interfaces 
   including test cases. 
 
+## Challenge yourself
 
-
+If you would like to explore further after finishing the project, 
+consider testing the extent to which we have really succeeded in 
+making our functions _general_.  How hard would it be to make this 
+program summarize counts by class standing instead of major?  What 
+if you wanted to apply the program to different data files?   How 
+might you improve the program to make it more useful for analyzing 
+enrollment in other classes?  
