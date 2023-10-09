@@ -721,7 +721,16 @@ more general:  It returns a list of (value, key) pairs for _any_
 dict.   Thus variable names like `count` are not appropriate.  You 
 can start by copying some code from the prior version of `main`, but 
 rework it to use appropriate variable names.  Also provide a 
-suitable header comment and doctest. 
+suitable header comment and doctest.
+
+Note: Writing a doctest can be frustrating because the doctest 
+module looks for character-by-character identical results.  For 
+example, the result `["alpha", "beta"]` would _not_ be considered 
+correct if your doctest expected `['alpha', 'beta']`, even though 
+this is just another way of writing the same value.   When you 
+encounter this problem, it is ok to cut-and-paste the actual output 
+into the doctest, replacing a logically equivalent but differently 
+formatted value. 
 
 ## Recap
 
