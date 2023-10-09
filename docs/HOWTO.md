@@ -3,11 +3,19 @@
 The primary objective of this project is to introduce a fundamental 
 loop idiom, the _accumulator pattern_, together with some ways of 
 representing tabular data.  We will consider both _lists_ and 
-_dictionaries_ as representations of tabular data.  We will use 
-dictionaries (type `dict`)  in a version of the accumulator 
-pattern, to keep counts of elements in a list.  We will also 
-use a dictionary to expand abbreviated codes from a list. 
+_dictionaries_ as representations of tabular data. We will 
+use dictionaries (type `dict`)  in a version of the accumulator 
+pattern, to keep counts of elements in a list. 
 
+In addition to 
+the _accumulator pattern_, our application will make use of 
+_indirect reference_, another common idiom in which values in one 
+data structure are treated as _references_ to values in another data 
+structure.  In our case, values in the enrollment table will be 
+interpreted as references to rows in other tables (much as you might 
+use a "lookup" function in a spreadsheet).  For example, our 
+enrollment table might contain the value "CINE", which we can 
+interpret as "Cinema Studies" by looking it up in another table. 
 
 We will take data in the form of text files in the _comma separated 
 values_ (CSV) format, which can be exported from many popular 
@@ -90,8 +98,8 @@ information from `roster_selected.csv`.
 
 ## Desired output
 
-The output should summarize enrollment numbers by major.  It will 
-look like this: 
+The output should summarize enrollment numbers by major.  It will be 
+formatted like this: 
 
 ```commandline
   40 Computer and Information Science
@@ -114,9 +122,11 @@ look like this:
 There are several ways we could tackle this problem.  An expert user 
 of a spreadsheet application like Excel or Google Sheets could do it 
 entirely within a spreadsheet app.  Someone expert in the use of the 
-R language for statistical computation might choose that.  A data 
-scientist might use the Python Pandas package and/or the Anaconda 
-distribution for scientific computing in Python.  Each of these 
+[R](https://www.r-project.org/) language
+for statistical computation might choose that.  A data 
+scientist might use the Python [Pandas](https://pandas.pydata.org/)
+package and/or the [Anaconda](https://anaconda.org/) 
+distribution for data science with Python.  Each of these 
 choices might be appropriate in some contexts.  For example, if nice 
 graphic displays were important, the Anaconda distribution might be 
 preferable to the version of Python that we will use.
@@ -130,6 +140,10 @@ disentangle data from its analysis in a spreadsheet).  So our
 approach is not the _only_ reasonable approach, it is one reasonable 
 approach for someone who is not already committed to R, Pandas, or 
 Anaconda. 
+Our purpose in this project is to 
+understand some of the basic techniques used in building those more 
+sophisticated tools. 
+
 
 ## Steps
 
@@ -224,7 +238,7 @@ all the other things I tried before settling on this approach.
 The first task, finding program names associated 
 with codes, is conceptually straightforward:  We are given a _key_ 
 that appears in one column of the table, and we want one or more 
-_values_ from other columns of the table.  Since they key will be a 
+_values_ from other columns of the table.  Since the key will be a 
 string, a straightforward and efficient way to handle this task will 
 be to keep the table as a Python `dict` structure. 
 
@@ -289,6 +303,7 @@ each student.  For example, we might have
 | DSCI   |
 | BADM   |
 
+
 We can represent this single-column table very simply as a list
 
 ```python
@@ -324,11 +339,11 @@ same major code.
 
 | Major |
 |-------|
-| CS    |
-| CS    |
-| DSCI  |
-| DSCI  |
 | BADM  |
+| CS    |
+| CS    |
+| DSCI  |
+| DSCI  |
 | GSS   |
 
 We could write a loop that keeps a count for each contiguous group 
@@ -358,7 +373,7 @@ pseudocode:
 ```pseudocode
 Read roster CSV file into a single list with major codes. 
 Count elements in list of major codes, keeping a summary in a dict 
-that maps major code to count. 
+   that maps major code to count. 
 Sort the (major code, count) elements from the dict, giving a list 
 from largest count to smallest. 
 Read program CSV file into a dict that maps program codes (the same 
@@ -464,11 +479,20 @@ in the CSV module documentation.
 It treats the header row of the CSV file specially, letting us use
 column headings as keys to get the fields we want from a row.  
 
+Recall that you can find thorough documentation of the standard
+Python libraries (including even built-in types) in the
+[Python library documentation](
+https://docs.python.org/3/library/index.html),
+which you should have bookmarked.  Look for the chapter on the
+CSV module. Within that chapter, look for documentation of the
+`DictReader` class.  
 The CSV module documentation 
 provides an example of reading and printing the names of Monty 
 Python cast members with a `DictReader`.  You can use that as a 
 starting point, opening the value of `path` instead of `names.csv`, 
-and building a list instead of printing names. 
+and building a list instead of printing names.  Don't forget to 
+return the initialize the list before the loop, and return the list 
+at the end of your function. 
 
 ### Count element values
 
@@ -502,6 +526,10 @@ major code in each element:
 - There is already a count of 1 or more for that major code.  You 
   will need to increase it by 1. 
 
+You can initialize an empty `dict` with a line like
+```python
+el_counts = {}
+```
 Don't forget to return the `dict` _after_ the loop. 
 
 ### Start integrating
@@ -720,6 +748,9 @@ structured data:
 - We summarized data by counting occurrences of distinct values.  
   This is a variation on the fundamental _accumulator pattern_, 
   which you will use often in many different ways.
+
+- We _dereferenced_ values in one table (major codes) to
+  corresponding values in another table (major names)
 
 - We used a _destructuring assignment_ to extract elements from
   tuples, and used destructuring in a `for`loop to loop 
